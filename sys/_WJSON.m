@@ -38,6 +38,7 @@ q(prop)	if prop?1.N set prop="_"_prop
 
 	;__get correct value
 v(val)	if val=+val quit val
+	if $e(val)="{",$e(val,$l(val))="}" quit val
 	quit """"_val_""""
 
 	;__mask illegal symbols
@@ -49,12 +50,15 @@ m(str)	quit str
 jsfyt(src,cfg,dst,lvl)
 	new fldi,in,conf,fldc,val,fval,fname,fnum,ftype,fdel,gstr,str
 	set lvl=$g(lvl)+1
-	if $g(cfg(lvl))="" quit  ;_этот уровень не описан - пропускаем
+	if $g(cfg(lvl))=""  do  quit  ;_этот уровень не описан - пропускаем
+	 . set in="" for  set in=$o(@src@(in)) quit:in=""  do
+	 . . if $d(@src@(in)) do jsfyt($name(@src@(in)),.cfg,.dst,lvl)
 	set conf=cfg(lvl)
 	set in="",gstr=""
 	for  set in=$o(@src@(in)) quit:in=""  if $d(@src@(in))#10 do
 	 . set fval=@src@(in),str=""
-	 . for fldi=1:1:$l(conf,"|") set fldc=$p(conf,"|",fldi) if fldc'="" do
+	 . for fldi=1:1:$l(conf,"|") do
+	 . . set fldc=$p(conf,"|",fldi) if fldc="" quit
 	 . . set fname=$p(fldc,":",1)
 	 . . set fnum=$p(fldc,":",2) if fnum="" set fnum=fldi
 	 . . set ftype=$p(fldc,":",3) if ftype="" set ftype="S"

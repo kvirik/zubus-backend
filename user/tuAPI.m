@@ -50,19 +50,20 @@ trips
 	set lang=$g(%Key("lang"))
 	set hwhen=$$indate(when) if 'hwhen do apierror(hwhen,when,lang) quit
 	set conf(0)="date|id"
-	set conf(2)="date:%1|id:%2:N|from:1|to:2|places:3|busname:4|dist:5|price:6|bprice:7|racetime:8|period:9|block:10|platf:11|reref:12|carrier:15|insur:16|arrtime:17"
+	;set conf(2)="date:%1|id:%2:N|from:1|to:2|places:3|busname:4|dist:5|price:6|bprice:7|racetime:8|period:9|block:10|platf:11|reref:12|carrier:15|insur:16|arrtime:17"
+	set conf(2)="date:%1|id:%2:N|stDepName:1|stDepAddr:2|stArrName:3|stArrAddr:4|dtDep:5|dtDepSec:6|dtArr:7|dtArrSec:8|wayTimeH:9|wayTimeM:10|wayTimeSec:11|carrier:12|price:13|places:14|racename:15"
 	do trips^tuAPIDB(.content,cFrom,cTo,hwhen,edges,lang)
 	do FromTab^%WJSON("content",.json,.conf)
 	do writejson(.json,codepage)
 	quit
 
 testtrips
-	set $zstep="zprint @$zpos b  "
+	;set $zstep="zprint @$zpos b  "
 	set %Key("from")=4
 	set %Key("to")=2
 	set %Key("when")="2016-05-19"
-	set codepage="utf8"
-	zbreak jsfyt+19^%WJSON
+	set codepage="koi8-r"
+	;zbreak jsfyt+19^%WJSON
 	do trips
 	quit
 	;

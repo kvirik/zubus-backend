@@ -78,7 +78,9 @@ getraces(content,from,to,date,lang)
 	 . . set $p(data,%,15,16)=carrier_%_insurance
 	 . . quit
 	 . set $p(data,%,17)=$$VRv^tU(CRE)
-	 . if $p(data,%,10)="" set content(date,nVR)=data  ;__только если есть в этот день
+	 . set $p(data,%,18)=from
+	 . set $p(data,%,19)=to
+	 . if $p(data,%,10)="" set content(date,nVR)=$$TransformTrip(data,nVR,.lang)  ;__только если есть в этот день
 	 . quit
 	quit
 
@@ -90,6 +92,44 @@ IndexateStations
 	set city="" for  set city=$o(^tCITYST(city)) quit:city=""  set st="" for  set st=$o(^tCITYST(city,st)) quit:st=""  if '$d(inx(city,st)) kill ^tCITYST(city,st)
 	merge ^tCITYST=inx set ^tCITYST=$h
 	quit
+
+	;  1   2     3    4   5     6     7      8     9   10  11     12  13        14          15     16    17     18    19
+	; StF/StN/Places/Bus/Dist/Price/PriceB/Times/Regul/No/Platf/ReRef/ATP/SoldLgotPlaces/Carrier|Insur|Arrtime|StDep|StArr
+	; Price[B]: Price1:Curr1/Price2:Curr2/.../PriceN:CurrN
+	; Times: DepartStart|ArrivalEnd|DepartInit
+	; --> to -->
+	;     1         2         3         4       5      6       7      8          9      10        11       12      13    14     15
+	; StDepName/StDepAddr/StArrName/StArrAddr/DTDep/DTDepSec/DTArr/DTArrSec/WayTimeH/WayTimeM/WayTimeSec/Carrier/Price/Places/Racename
+TransformTrip(data,VR,lang)
+	new %,str,time,ntime,priceUAH,i,tmp,stF,stN
+	set lang=$g(lang)
+	set %=$c(254)
+	set time=$$XMLDT2Sec^tuAPIU($p($p(data,%,8),"|",2))-$$XMLDT2Sec^tuAPIU($p($p(data,%,8),"|",1))
+	if time'>0 set ntime="",time=0
+	else  set ntime=(time\3600)_":"_(time#3600\60)
+	set priceUAH=""
+	for i=1:1:$l($p(data,%,6),"/") do
+	 . set tmp=$p($p(data,%,6),"/",i)
+	 . if $p(tmp,":",2)="UAH" set priceUAH=$p(tmp,":",1)
+	set tmp=$$VR^tU(VR,8,%)
+	set stF=$p(tmp,%,3)
+	set stN=$p(tmp,%,4)
+	set str=$$StName^tuAPIU($p(data,%,18),lang)
+	set str=str_$c(254)_$$StAddr^tuAPIU($p(data,%,18),lang)
+	set str=str_$c(254)_$$StName^tuAPIU($p(data,%,19),lang)
+	set str=str_$c(254)_$$StAddr^tuAPIU($p(data,%,19),lang)
+	set str=str_$c(254)_$p($p(data,%,8),"|",1)
+	set str=str_$c(254)_$$XMLDT2Sec^tuAPIU($p($p(data,%,8),"|",1))
+	set str=str_$c(254)_$p($p(data,%,8),"|",2)
+	set str=str_$c(254)_$$XMLDT2Sec^tuAPIU($p($p(data,%,8),"|",2))
+	set str=str_$c(254)_$p(ntime,":",1)
+	set str=str_$c(254)_$p(ntime,":",2)
+	set str=str_$c(254)_time
+	set str=str_$c(254)_$$CarrierName^tuAPIU($p(data,%,15),lang)
+	set str=str_$c(254)_priceUAH
+	set str=str_$c(254)_$p(data,%,3)
+	set str=str_$c(254)_$$StName^tuAPIU(stF,lang)_"-"_$$StName^tuAPIU(stN,lang)
+	quit str
 
 
 Sec(hdt)
